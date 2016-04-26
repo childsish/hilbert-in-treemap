@@ -10,8 +10,9 @@ lengths = c(
 )
 
 lengths = lengths / 100000
-height = sqrt(sum(lengths) / 1.618)
-width = height * 1.618
+ratio = get.best.ratio(lengths)
+height = sqrt(sum(lengths) / ratio)
+width = height * ratio
 
 rows = squarify(lengths, width, height)
 rectangles = squarify.coordinates(rows, width, height) %>%

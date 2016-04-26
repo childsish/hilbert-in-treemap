@@ -1,4 +1,35 @@
-squarify = function(children, width, height) {
+get.best.ratio = function(children, ratios=NULL) {
+  if (is.null(ratios)) {
+    ratios = 0:20 / 20 + 1
+  }
+  worst.ratios = c()
+  for (ratio in ratios) {
+    height = sqrt(sum(children) / ratio)
+    width = height * ratio
+
+    rows = squarify(children, width, height)
+
+    dimensions = c(width, height)
+    current = which(dimensions == min(dimensions))[1]
+
+    worst.ratio = 1
+    for (row in rows) {
+      t = sum(row) / prod(dimensions) * dimensions[-current]
+      worst.ratio = max(max(row / t, t) / min(row / t, t), worst.ratio)
+      dimensions[-current] = dimensions[-current] - t
+      current = which(dimensions == min(dimensions))
+    }
+    worst.ratios[length(worst.ratios) + 1] = worst.ratio
+  }
+  return(ratios[worst.ratios == min(worst.ratios)])
+}
+
+squarify = function(children, width=NULL, height=NULL) {
+  if (is.null(width) || is.null(height)) {
+    height = sqrt(sum(children) / 1.618)
+    width = height * 1.618
+  }
+
   rows = list()
   row = children[1]
   dimensions = c(width, height)

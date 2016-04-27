@@ -121,77 +121,60 @@ terminal.y = array(c(
 
 pseudo.hilbert = function(l, width, height, rotation=1) {
   M = get.M(width, height)
-  position = as.vector(l)
-  rotation = array((rotation - 1) %% 4 + 1, length(l))
-  width = array(width, length(l))
-  height = array(height, length(l))
-  x = array(0, length(l))
-  y = array(0, length(l))
-  k = M
-  while (k > 1) {
-    quadrant.data = data.frame(position = position,
-                               width = width,
-                               height = height,
-                               rotation = rotation,
-                               x = x,
-                               y = y)
-    quadrants = split(quadrant.data)
-    x = quadrants$x
-    y = quadrants$y
-    position = quadrants$position
-    width = quadrants$width
-    height = quadrants$height
+  quadrant.data = data.frame(position = as.vector(l),
+                             rotation = array((rotation - 1) %% 4 + 1, length(l)),
+                             width = array(width, length(l)),
+                             height = array(height, length(l)),
+                             x = array(0, length(l)),
+                             y = array(0, length(l)))
 
-    rotation = induction.matrix[cbind(rotation, quadrants$quadrant)]
-    k = k - 1
+  for (i in 2:M) {
+    quadrant.data = split.quadrant(quadrant.data)
   }
 
-  end.point = get.end.point(width, height)
-  x = terminal.x[cbind(position, rotation, end.point)] + x
-  y = terminal.y[cbind(position, rotation, end.point)] + y
+  end.point = get.end.point(quadrant.data$width, quadrant.data$height)
+  x = terminal.x[cbind(quadrant.data$position, quadrant.data$rotation, end.point)] + quadrant.data$x
+  y = terminal.y[cbind(quadrant.data$position, quadrant.data$rotation, end.point)] + quadrant.data$y
   return(data.frame(x=x, y=y))
 }
 
-get.quadrant.sizes = function(quadrant.data) {
-  x = t(terminal.x[1:4,quadrant.data$rotation,1])
-  y = t(terminal.y[1:4,quadrant.data$rotation,1])
+split.quadrant = function(quadrant.data) {
+  widths = split.edge(quadrant.data$width)
+  heights = split.edge(quadrant.data$height)
+  width.matrix = t(sapply(1:nrow(quadrant.data), function(i) {
+    widths[i,][terminal.x[1:4,quadrant.data$rotation[i],1] + 1]
+  }))
+  height.matrix = t(sapply(1:nrow(quadrant.data), function(i) {
+    heights[i,][terminal.y[1:4,quadrant.data$rotation[i],1] + 1]
+  }))
+  sizes = width.matrix * height.matrix
+  cumulative.sizes = t(apply(sizes, 1, cumsum))
+  quadrant = apply(quadrant.data$position <= cumulative.sizes, 1, function(row) which(row)[1])
 
-  width = apply(x, 2, function(column) split.edge(quadrant.data$width, column != x[,1]))
-  height = apply(y, 2, function(column) split.edge(quadrant.data$height, column != y[,1]))
+  position = quadrant.data$position - cbind(0, cumulative.sizes)[cbind(1:nrow(quadrant.data), quadrant)]
+  rotation = induction.matrix[cbind(quadrant.data$rotation, quadrant)]
+  width = width.matrix[cbind(1:nrow(quadrant.data), quadrant)]
+  height = height.matrix[cbind(1:nrow(quadrant.data), quadrant)]
+  x = terminal.x[cbind(quadrant, quadrant.data$rotation, 1)] * apply(widths, 1, min)
+  y = terminal.y[cbind(quadrant, quadrant.data$rotation, 1)] * apply(heights, 1, min)
 
-  return(matrix(width * height, ncol=4))
+  return(data.frame(position, rotation, width, height,
+    x = quadrant.data$x + x,
+    y = quadrant.data$y + y
+  ))
 }
 
-get.quadrant = function(quadrant.data) {
-  sizes = get.quadrant.sizes(quadrant.data) %>%
-    apply(1, cumsum) %>%
-    t()
-  quadrant = apply(quadrant.data$position <= sizes, 1, function(row) which(row)[1])
-  position = quadrant.data$position - cbind(0, sizes)[cbind(1:length(quadrant), quadrant)]
-  return(data.frame(position, quadrant))
-}
+split.edge = function(edge, n=2) {
+  if (min(edge) < n) {
+    stop('splitting edge will give edges of length 0')
+  }
 
-split = function(quadrant.data) {
-  next.quadrant = get.quadrant(quadrant.data)
-  next.split = quadrant.data %>%
-    mutate(position = next.quadrant[,1],
-           quadrant = next.quadrant[,2],
-           entry.x = terminal.x[cbind(1, rotation, 1)] == terminal.x[cbind(quadrant, rotation, 1)],
-           entry.y = terminal.y[cbind(1, rotation, 1)] == terminal.y[cbind(quadrant, rotation, 1)],
-           x = x + terminal.x[cbind(quadrant, rotation, 1)] * split.edge(width, entry.x),
-           y = y + terminal.y[cbind(quadrant, rotation, 1)] * split.edge(height, entry.y),
-           width = split.edge(width, !entry.x),
-           height = split.edge(height, !entry.y))
-  return(next.split)
-}
-
-split.edge = function(edge, gets.remainder, n=2) {
-  half = edge %/% 2
-  edge.is.odd = edge %% 2
-  half.is.odd = half %% 2
-  half[edge.is.odd & gets.remainder] = half[edge.is.odd & gets.remainder] + 1
-  half[half.is.odd & !edge.is.odd] = half[half.is.odd & !edge.is.odd] + 2 * gets.remainder[half.is.odd & !edge.is.odd] - 1
-  return(half)
+  res = matrix(0, nrow = length(edge), ncol=n)
+  divisor = 2 * n
+  for (i in 1:n) {
+    res[,i] = (edge + 2 * i - 2) %/% divisor * 2 + (edge + 2 * i - 1) %/% divisor - (edge + 2 * i - 2) %/% divisor
+  }
+  return(res)
 }
 
 get.end.point = function(width, height) {
@@ -217,7 +200,7 @@ get.M = function(width, height) {
   Ms = which(lower.bound <= height & height <= upper.bound &
              lower.bound <= width & width <= upper.bound)
   if (length(Ms) == 0 || length(Ms) > 2) {
-    stop('invalid height and width')
+    stop(paste('invalid width and height:', width, height))
   }
   return(Ms[1])
 }

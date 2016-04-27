@@ -24,10 +24,12 @@ rectangles = squarify.coordinates(rows, width, height) %>%
          y1 = y1 %/% 2 * 2,
          x2 = x2 %/% 2 * 2,
          y2 = y2 %/% 2 * 2,
+         y1 = max(y2) - y1,
+         y2 = max(y2) - y2,
          x = x1,
-         y = y1,
+         y = y2,
          width = x2 - x1,
-         height = y2 - y1)
+         height = y1 - y2)
 
 par(mar=c(0, 0, 0, 0))
 plot(1, type="n", axes=F, xlab="", ylab="", xlim=c(0, max(rectangles$x + rectangles$width)), ylim=c(0, max(rectangles$y + rectangles$height)))
@@ -37,9 +39,9 @@ for (i in 1:nrow(rectangles)) {
   rectangle = rectangles[i,]
   points = pseudo.hilbert(1:lengths[i],
                           rectangle$width + 2,
-                          rectangle$height + 2) %>%
-    mutate(x = x * 0.95 + rectangle$x + 0.5,
-           y = y * 0.95 + rectangle$y + 0.5,
-           y = max(rectangles$y + rectangles$height) - y)
+                          rectangle$height + 2)
+   points = points %>%
+     mutate(x = x * 0.95 + rectangle$x + 0.05,
+            y = y * 0.95 + rectangle$y + 0.05)
   lines(points)
 }

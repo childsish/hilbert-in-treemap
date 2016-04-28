@@ -1,32 +1,33 @@
-library(dplyr)
+hilbert = function(side.length, position = NULL) {
+  if (log2(side.length) %% 1 != 0) {
+    stop('side length must be a power of two')
+  }
+  else if (is.null(position)) {
+    position = 1:(side.length * side.length)
+  }
 
-hilbert = function(d, n) {
-  res = data.frame(x=0, y=0, rx=FALSE, ry=FALSE, t=d-1)
+  curve = data.frame(x = 0, y = 0, rx = 0, ry = 0, t = position - 1)
   s = 1
-  while (s < n) {
-    res = mutate(res,
-                 rx = bitwAnd(1, (t %/% 2)),
-                 ry = bitwAnd(1, bitwXor(t, rx)))
-    res = rot(res, s)
-    res = mutate(res,
-                 x = x + s * rx,
-                 y = y + s * ry,
-                 t = t / 4)
+  while (s < side.length) {
+    curve$rx = bitwAnd(1, curve$t %/% 2)
+    curve$ry = bitwAnd(1, bitwXor(curve$t, curve$rx))
+    curve = flip.and.rotate(curve, s)
+    curve$x = curve$x + s * curve$rx
+    curve$y = curve$y + s * curve$ry
+    curve$t = curve$t / 4
     s = s * 2
   }
-  return(select(res, x, y))
+  return(curve[,c('x', 'y')])
 }
 
-rot = function(res, n) {
-  res = mutate(res,
-               x = ifelse(ry == 0 & rx == 1, n - 1 - x, x),
-               y = ifelse(ry == 0 & rx == 1, n - 1 - y, y),
-               tmp = ifelse(ry == 0, x, NA),
-               x = ifelse(ry == 0, y, x),
-               y = ifelse(ry == 0, tmp, y))
-  return(res)
-}
+flip.and.rotate = function(curve, side.length) {
+  flip = !curve$ry & curve$rx
+  curve$x[flip] = side.length - 1 - curve$x[flip]
+  curve$y[flip] = side.length - 1 - curve$y[flip]
 
-n = 256
-points = hilbert(1:(n * n), n)
-plot(points, type='l')
+  rotate = !curve$ry
+  tmp = curve$x[rotate]
+  curve$x[rotate] = curve$y[rotate]
+  curve$y[rotate] = tmp
+  return(curve)
+}

@@ -1,5 +1,3 @@
-library(dplyr)
-
 induction.matrix = matrix(c(
   2, 1, 1, 4,
   1, 2, 2, 3,
@@ -59,7 +57,32 @@ terminal.y = array(c(
 
 ), c(16, 4, 9))  # i, g, p
 
-pseudo.hilbert = function(l, width, height, rotation=1) {
+pseudo.hilbert = function(l, width, height, rotation=NULL) {
+  segments = get.segments(width, height)
+  sizes = c(0, cumsum(segments$width * segments$height))
+  idxs = apply(sapply(l, function(l) l > sizes), 2, function(l) which(!l)[1] - 1)
+
+  if (is.null(rotation)) {
+    rotation = 1
+    if (height > width) {
+      segments$y = rev(segments$y)
+      rotation = 4
+    }
+  }
+
+  curve = list()
+  for (i in 1:nrow(segments)) {
+    segment = segments[i,]
+    ll = l[l > sizes[i] & l <= sizes[i + 1]]
+    ll = ll - sizes[i]
+    curve[[i]] = fill.segment(segment$width, segment$height, ll, rotation)
+    curve[[i]]$x = segment$x + curve[[i]]$x
+    curve[[i]]$y = segment$y + curve[[i]]$y
+  }
+  return(do.call('rbind', curve))
+}
+
+fill.segment = function(width, height, l, rotation=1) {
   M = get.M(width, height)
   quadrant.data = data.frame(position = as.vector(l),
                              rotation = array((rotation - 1) %% 4 + 1, length(l)),
@@ -76,6 +99,26 @@ pseudo.hilbert = function(l, width, height, rotation=1) {
   x = terminal.x[cbind(quadrant.data$position, quadrant.data$rotation, end.point)] + quadrant.data$x
   y = terminal.y[cbind(quadrant.data$position, quadrant.data$rotation, end.point)] + quadrant.data$y
   return(data.frame(x=x, y=y))
+}
+
+get.segments = function(width, height) {
+  dimensions = matrix(c(width, height), ncol=2)
+  longest.side = which(dimensions == max(dimensions))[1]
+
+  n = 2
+  while (any(floor(log2(dimensions[,longest.side])) != floor(log2(dimensions[,-longest.side])))) {
+    split = list(width, height)
+    split[[longest.side]] = t(split.edge(split[[longest.side]], n))
+    dimensions = do.call('cbind', split)
+    n = n + 1
+  }
+  positions = dimensions
+  positions[,longest.side] = c(0, cumsum(dimensions[,longest.side]))[-nrow(dimensions) - 1]
+  positions[,-longest.side] = 0
+  return(data.frame(width = dimensions[,1],
+                    height = dimensions[,2],
+                    x = positions[,1],
+                    y = positions[,2]))
 }
 
 split.quadrant = function(quadrant.data) {

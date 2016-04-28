@@ -1,3 +1,4 @@
+#' @export
 hilbert = function(side.length, position = NULL) {
   if (log2(side.length) %% 1 != 0) {
     stop('side length must be a power of two')

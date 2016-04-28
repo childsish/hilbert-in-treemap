@@ -57,17 +57,19 @@ terminal.y = array(c(
 
 ), c(16, 4, 9))  # i, g, p
 
-pseudo.hilbert = function(l, width, height, rotation=NULL) {
+pseudo.hilbert = function(width, height, l=NULL, rotation=NULL) {
   segments = get.segments(width, height)
-  sizes = c(0, cumsum(segments$width * segments$height))
-  idxs = apply(sapply(l, function(l) l > sizes), 2, function(l) which(!l)[1] - 1)
-
   if (is.null(rotation)) {
     rotation = 1
     if (height > width) {
-      segments$y = rev(segments$y)
+      segments = segments[nrow(segments):1,]
       rotation = 4
     }
+  }
+  sizes = c(0, cumsum(segments$width * segments$height))
+
+  if (is.null(l)) {
+    l = 1:(width * height)
   }
 
   curve = list()
@@ -82,8 +84,11 @@ pseudo.hilbert = function(l, width, height, rotation=NULL) {
   return(do.call('rbind', curve))
 }
 
-fill.segment = function(width, height, l, rotation=1) {
+fill.segment = function(width, height, l=NULL, rotation=1) {
   M = get.M(width, height)
+  if (is.null(l)) {
+    l = 1:(width * height)
+  }
   quadrant.data = data.frame(position = as.vector(l),
                              rotation = array((rotation - 1) %% 4 + 1, length(l)),
                              width = array(width, length(l)),

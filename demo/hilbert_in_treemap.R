@@ -7,7 +7,7 @@ lengths = c(
   101991189, 90338345, 83257441, 80373285, 58617616, 64444167, 46709983, 50818468
 )
 
-lengths = lengths / 10000
+lengths = lengths / 100000
 ratio = get.best.ratio(lengths)
 height = sqrt(sum(lengths) / ratio)
 width = height * ratio

@@ -57,6 +57,7 @@ terminal.y = array(c(
 
 ), c(16, 4, 9))  # i, g, p
 
+#' @export
 pseudo.hilbert = function(width, height, l=NULL, rotation=NULL) {
   segments = get.segments(width, height)
   if (is.null(rotation)) {

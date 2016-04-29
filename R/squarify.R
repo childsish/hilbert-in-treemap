@@ -1,3 +1,4 @@
+#' @export
 get.best.ratio = function(children, ratios=NULL) {
   if (is.null(ratios)) {
     ratios = 0:20 / 20 + 1
@@ -24,6 +25,7 @@ get.best.ratio = function(children, ratios=NULL) {
   return(ratios[worst.ratios == min(worst.ratios)])
 }
 
+#' @export
 squarify = function(children, width=NULL, height=NULL) {
   if (is.null(width) || is.null(height)) {
     height = sqrt(sum(children) / 1.618)
@@ -58,6 +60,7 @@ worst = function(R, w) {
   return(res)
 }
 
+#' @export
 squarify.coordinates = function(rows, width, height) {
   origin = c(0, 0)
   dimensions = c(width, height)

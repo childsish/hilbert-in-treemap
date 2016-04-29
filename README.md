@@ -25,3 +25,8 @@ plot(pseudo.hilbert(1240, 1024), type='l')
 
 ![Pseudo-Hilbert Curve](images/pseudo-hilbert.png)
 Format: ![A pseudo-Hilbert curve](url)
+
+To see an example of a pseudo-Hilbert curve in a treemap run the demo
+
+![Pseudo-Hilbert Curve](images/hilbert_in_treemap.png)
+Format: ![A pseudo-Hilbert curve](url)

@@ -22,3 +22,6 @@ To get a pseudo-Hilbert curve use the `pseudo.hilbert` function.
 par(mar = rep(0, 4), xaxs = 'i', yaxs = 'i')
 plot(pseudo.hilbert(1240, 1024), type='l')
 ```
+
+![Pseudo-Hilbert Curve](images/pseudo-hilbert.png)
+Format: ![A pseudo-Hilbert curve](url)

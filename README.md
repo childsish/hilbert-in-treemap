@@ -10,7 +10,7 @@ To get a vanilla Hilbert curve use the `hilbert` function.
 
 ```{r}
 par(mar = rep(0, 4), xaxs = 'i', yaxs = 'i')
-plot(hilbert(512), type='l')
+plot(hilbert(128), type='l')
 ```
 
 ![Hilbert Curve](images/hilbert.png)
@@ -19,7 +19,7 @@ To get a pseudo-Hilbert curve use the `pseudo.hilbert` function.
 
 ```{r}
 par(mar = rep(0, 4), xaxs = 'i', yaxs = 'i')
-plot(pseudo.hilbert(1240, 1024), type='l')
+plot(pseudo.hilbert(162, 100), type='l')
 ```
 
 ![Pseudo-Hilbert Curve](images/pseudo-hilbert.png)

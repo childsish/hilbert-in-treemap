@@ -14,7 +14,6 @@ plot(hilbert(512), type='l')
 ```
 
 ![Hilbert Curve](images/hilbert.png)
-Format: ![A vanilla Hilbert curve](url)
 
 To get a pseudo-Hilbert curve use the `pseudo.hilbert` function.
 
@@ -24,9 +23,7 @@ plot(pseudo.hilbert(1240, 1024), type='l')
 ```
 
 ![Pseudo-Hilbert Curve](images/pseudo-hilbert.png)
-Format: ![A pseudo-Hilbert curve](url)
 
 To see an example of a pseudo-Hilbert curve in a treemap run the demo
 
 ![Pseudo-Hilbert Curve](images/hilbert_in_treemap.png)
-Format: ![A pseudo-Hilbert curve](url)

@@ -13,6 +13,9 @@ par(mar = rep(0, 4), xaxs = 'i', yaxs = 'i')
 plot(hilbert(512), type='l')
 ```
 
+![Hilbert Curve](images/hilbert.png)
+Format: ![A vanilla Hilbert curve](url)
+
 To get a pseudo-Hilbert curve use the `pseudo.hilbert` function.
 
 ```{r}

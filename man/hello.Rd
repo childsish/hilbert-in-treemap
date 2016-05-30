@@ -1,12 +1,14 @@
-\name{hello}
-\alias{hello}
-\title{Hello, World!}
+\name{hilbertintreemap}
+\alias{hilbertintreemap}
+\title{Pseudo-Hilbert curves in tree maps}
 \usage{
-hello()
+
 }
 \description{
-Prints 'Hello, world!'.
+Plots pseudo-Hilbert curves in tree maps.
 }
 \examples{
-hello()
+par(mar = c(0,0,0,0), xaxs = "i", yaxs = "i")
+plot(0, type='n', xlim=c(0, 512), ylim=c(0, 512))
+lines(hilbert(512))
 }

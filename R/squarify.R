@@ -1,4 +1,24 @@
 #' @export
+adjust.till.fit = function(children, ratios=NULL, iterations=100) {
+  original = children
+  for (i in 1:iterations) {
+    ratio = get.best.ratio(children, ratios)
+    height = sqrt(sum(children) / ratio)
+    width = height * ratio
+    rows = squarify(children, width, height)
+    rectangles = squarify.coordinates(rows, width, height)
+    rectangles = adjust.coordinates(rectangles)
+
+    adj = (rectangles$width * rectangles$height - original)
+    if (all(adj > 0)) {
+      break
+    }
+    children = children - ifelse(adj < 0, adj, 0)
+  }
+  return(rectangles)
+}
+
+#' @export
 get.best.ratio = function(children, ratios=NULL) {
   if (is.null(ratios)) {
     ratios = 0:20 / 20 + 1
@@ -22,7 +42,7 @@ get.best.ratio = function(children, ratios=NULL) {
     }
     worst.ratios[length(worst.ratios) + 1] = worst.ratio
   }
-  return(ratios[worst.ratios == min(worst.ratios)])
+  return(ratios[worst.ratios == min(worst.ratios)][1])
 }
 
 #' @export
@@ -89,4 +109,23 @@ squarify.coordinates = function(rows, width, height) {
   res = data.frame(os, ds)
   colnames(res) = c('x', 'y', 'width', 'height')
   return(res)
+}
+
+#' @export
+adjust.coordinates = function(coordinates) {
+  x1 = coordinates$x
+  y1 = coordinates$y
+  x2 = coordinates$x + coordinates$width
+  y2 = coordinates$y + coordinates$height
+  x1 = x1 %/% 2 * 2
+  y1 = y1 %/% 2 * 2
+  x2 = x2 %/% 2 * 2
+  y2 = y2 %/% 2 * 2
+
+  return(data.frame(
+    x = x1,
+    y = y1,
+    width = x2 - x1,
+    height = y2 - y1
+  ))
 }
